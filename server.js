@@ -1,44 +1,37 @@
-const express = require('express')
+const express = require('express');
 const app = express();
 
-// packages
+// Packages
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
 
 // Models
-const Category = require('./models/Category'); // ← Yeh line add kar di
+const Category = require('./models/Category');
 
-// connection to DB and cloudinary
+// DB & Cloudinary
 const { connectDB } = require('./config/database');
 const { cloudinaryConnect } = require('./config/cloudinary');
 
-// routes
+// Routes
 const userRoutes = require('./routes/user');
 const profileRoutes = require('./routes/profile');
 const paymentRoutes = require('./routes/payments');
 const courseRoutes = require('./routes/course');
 
-// middleware 
+// Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-    cors({
-        origin: "*",
-        credentials: true
-    })
-);
-app.use(
-    fileUpload({
-        useTempFiles: true,
-        tempFileDir: '/tmp'
-    })
-);
+app.use(cors({ origin: "*", credentials: true }));
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp'
+}));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000; // Render pe 10000 better hota hai
 
-// ================ DEFAULT CATEGORIES ADD KARNE KA FUNCTION ================
+// Default Categories Function
 const createDefaultCategories = async () => {
     try {
         const categories = [
@@ -65,30 +58,39 @@ const createDefaultCategories = async () => {
     }
 };
 
-// Server start
+// Server Start with Proper Error Handling
 app.listen(PORT, async () => {
     console.log(`Server Started on PORT ${PORT}`);
-    
-    // DB connect karne ke baad categories add kar do
-    await connectDB();           // ← await lagaya kyuki DB connect hone ke baad categories add honi chahiye
-    cloudinaryConnect();
-    
-    // Ab categories add kar do
-    createDefaultCategories();   // ← Yeh line sabse important hai
+
+    try {
+        await connectDB();                  // DB connect hone ka wait
+        console.log("MongoDB connected successfully");
+
+        cloudinaryConnect();
+        console.log("Cloudinary connected successfully");
+
+        await createDefaultCategories();    // Ispe bhi await laga diya
+    } catch (err) {
+        console.log("CRITICAL ERROR - Server stopped:", err.message);
+        process.exit(1); // Agar DB nahi connect hua toh server band kar de
+    }
 });
 
-// mount routes
+// Routes
 app.use('/api/v1/auth', userRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/course', courseRoutes);
 
-// Default Route
+// Home Route
 app.get('/', (req, res) => {
     res.send(`
-        <div style="text-align:center; padding:50px; font-family:Arial;">
-            <h1>Study Circle API is Running!</h1>
-            <p>Everything is perfect</p>
+        <div style="text-align:center; padding:100px; font-family:Arial;">
+            <h1>Study Circle Backend is LIVE!</h1>
+            <p>MongoDB + Cloudinary Connected</p>
+            <p>Everything is working perfectly!</p>
         </div>
     `);
 });
+
+module.exports = app;
