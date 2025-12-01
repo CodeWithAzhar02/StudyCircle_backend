@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const mongoURI = process.env.MONGO_URI || 'mongodb+srv://CodeWithAzhar:Azhar@@@3332@cluster0.rapmamy.mongodb.net/studycircle?retryWrites=true&w=majority';
+const mongoURI = process.env.MONGO_URI;
 
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
@@ -14,7 +14,8 @@ mongoose.connection.on('connected', () => {
 });
 
 mongoose.connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
+    console.error('Error while connecting to Database:', err.message);
+    process.exit(1); // Exit if connection fails
 });
 
 mongoose.connection.on('disconnected', () => {
