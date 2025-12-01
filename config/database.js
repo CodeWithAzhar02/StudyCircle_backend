@@ -1,22 +1,30 @@
 // config/database.js
-
-const mongoose = require('mongoose');
-require('dotenv').config();
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const connectDB = async () => {
-    try {
-        if (!process.env.MONGODB_URL) {
-            throw new Error("MONGODB_URL not found in environment variables!");
-        }
+  try {
+    // Ye dono variable accept karega – jo bhi set ho
+    const dbUrl = process.env.DATABASE_URL || process.env.MONGODB_URL;
 
-        await mongoose.connect(process.env.MONGODB_URL);
-        console.log("MongoDB connected successfully");
-
-    } catch (error) {
-        console.log("Error while connecting server with Database");
-        console.log(error.message);
-        process.exit(1); // Server ko crash kar de agar DB connect na ho
+    if (!dbUrl) {
+      throw new Error(
+        "DATABASE_URL or MONGODB_URL not found in environment variables!"
+      );
     }
+
+    await mongoose.connect(dbUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("Error while connecting to Database:");
+    console.error(error.message);
+    // Vercel/Render pe gracefully band ho jayega, lekin crash nahi karega (better for logs)
+    // process.exit(1);  ← isko comment kar denge production mein
+  }
 };
 
 module.exports = { connectDB };
