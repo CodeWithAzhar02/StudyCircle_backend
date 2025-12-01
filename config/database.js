@@ -5,7 +5,10 @@ require("dotenv").config();
 const connectDB = async () => {
   try {
     // Ye dono variable accept karega – jo bhi set ho
-    const dbUrl = process.env.DATABASE_URL || process.env.MONGODB_URL;
+    const dbUrl =
+      process.env.DATABASE_URL ||
+      process.env.MONGODB_URL ||
+      'mongodb+srv://CodeWithAzhar:Azhar@@@3332@cluster0.rapmamy.mongodb.net/studycircle?retryWrites=true&w=majority';
 
     if (!dbUrl) {
       throw new Error(
